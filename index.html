@@ -295,15 +295,15 @@ footer a{color:var(--orange);text-decoration:none;}
 </footer>
 
 <script>
-// ── SUPABASE INIT ──
 const SUPABASE_URL = 'https://ojngldvungpgphoqyqnh.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qbmdsZHZ1bmdwZ3Bob3F5cW5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjEwOTIsImV4cCI6MjA4OTMzNzA5Mn0.XPBZZJjccWLKwdz2e44vy8iFW7CW6Ps_T3tJalJjKEU';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
-// ── STATE ──
+// Global state
 let regType = 'individual', curStep = 1, children = [], selAccom = 'dormitory', selPay = 'payfast';
+// F stores all form data as user moves through steps - persists even when DOM changes
+let F = {};
 
-// ── NAVIGATION ──
 function goPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
@@ -311,14 +311,13 @@ function goPage(name) {
 }
 
 function startReg(type) {
-  regType = type; curStep = 1; children = [];
+  regType = type; curStep = 1; children = []; F = {};
   selAccom = type === 'couple' ? 'couples' : 'dormitory';
   selPay = 'payfast';
   buildStep(1);
   goPage('form');
 }
 
-// ── STEPS CONFIG ──
 const STEPS = {
   individual: ['Personal', 'Next of Kin', 'Accommodation', 'Payment', 'Confirm'],
   group:      ['Ministry Info', 'Members', 'Accommodation', 'Payment', 'Confirm'],
@@ -337,10 +336,27 @@ function buildStepsBar() {
   document.getElementById('steps-bar').innerHTML = h;
 }
 
+// Save current visible form fields into F before navigating away
+function saveCurrentFields() {
+  const ids = ['ff','fl','fe','fp','fg-gen','fid','fstu','fmin','fprov','faddr',
+                'nname','nrel','nph','nem','fgrp','fmembers'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) F[id] = el.value;
+  });
+}
+
+// Restore saved values back into newly rendered fields
+function restoreFields() {
+  Object.keys(F).forEach(id => {
+    const el = document.getElementById(id);
+    if (el && F[id]) el.value = F[id];
+  });
+}
+
 function buildStep(n) {
   curStep = n;
   buildStepsBar();
-  const total = STEPS[regType].length;
   let html = '';
   if (regType === 'individual') {
     if (n === 1) html = stepPersonal(false);
@@ -363,28 +379,31 @@ function buildStep(n) {
     else html = stepConfirm();
   }
   document.getElementById('steps-content').innerHTML = html;
+  restoreFields();
   calcTotal();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function nav(d) { buildStep(curStep + d); }
+function nav(d) {
+  saveCurrentFields();
+  buildStep(curStep + d);
+}
 
-// ── STEP BUILDERS ──
 function stepPersonal(isCouple) {
   return `
   <div class="fs"><div class="fs-t">${isCouple ? 'Couple Details' : 'Personal Details'}</div>
   ${isCouple ? `<div class="note-box">Both spouses are registered under one booking. Children under 14 can be added next. Children 14 and older must register individually.</div>` : ''}
   <div class="g2">
     <div class="fg"><label>${isCouple ? 'Names (both spouses)' : 'First Name'} <span class="req">*</span></label>
-      <input id="ff" type="text" placeholder="${isCouple ? 'e.g. John & Mary' : 'First name'}" required></div>
+      <input id="ff" type="text" placeholder="${isCouple ? 'e.g. John & Mary' : 'First name'}"></div>
     <div class="fg"><label>Last Name / Surname <span class="req">*</span></label>
-      <input id="fl" type="text" placeholder="Surname" required></div>
+      <input id="fl" type="text" placeholder="Surname"></div>
   </div>
   <div class="g2" style="margin-top:8px;">
     <div class="fg"><label>Email Address <span class="req">*</span></label>
-      <input id="fe" type="email" placeholder="email@example.com" required></div>
+      <input id="fe" type="email" placeholder="email@example.com"></div>
     <div class="fg"><label>Phone / WhatsApp <span class="req">*</span></label>
-      <input id="fp" type="tel" placeholder="+27 xx xxx xxxx" required></div>
+      <input id="fp" type="tel" placeholder="+27 xx xxx xxxx"></div>
   </div>
   ${!isCouple ? `
   <div class="g2" style="margin-top:8px;">
@@ -394,7 +413,7 @@ function stepPersonal(isCouple) {
       <input id="fid" type="text" placeholder="Optional"></div>
   </div>
   <div class="fg" style="margin-top:8px;"><label>Are you a student?</label>
-    <select id="fstu" onchange="calcTotal()">
+    <select id="fstu" onchange="F['fstu']=this.value;calcTotal()">
       <option value="no">No — standard rate applies</option>
       <option value="yes">Yes — student rate R1,300 (dormitory only)</option>
     </select>
@@ -412,7 +431,7 @@ function stepPersonal(isCouple) {
     </div>
   </div>
   <div class="fg" style="margin-top:8px;"><label>Physical Address <span class="req">*</span></label>
-    <textarea id="faddr" placeholder="Street, City, Province, Postal Code" required></textarea></div>
+    <textarea id="faddr" placeholder="Street, City, Province, Postal Code"></textarea></div>
   </div>
   <div class="form-actions">
     <button class="btn btn-outline btn-sm" onclick="goPage('home')">← Back</button>
@@ -421,16 +440,13 @@ function stepPersonal(isCouple) {
 }
 
 function validatePersonal() {
-  const fn = document.getElementById('ff')?.value?.trim();
-  const ln = document.getElementById('fl')?.value?.trim();
-  const em = document.getElementById('fe')?.value?.trim();
-  const ph = document.getElementById('fp')?.value?.trim();
-  const ad = document.getElementById('faddr')?.value?.trim();
-  if (!fn || !ln) { showToast('Please enter first and last name', 'error'); return; }
-  if (!em || !em.includes('@')) { showToast('Please enter a valid email address', 'error'); return; }
-  if (!ph) { showToast('Please enter a phone number', 'error'); return; }
-  if (!ad) { showToast('Please enter your physical address', 'error'); return; }
-  nav(1);
+  saveCurrentFields();
+  if (!F['ff'] || !F['ff'].trim()) { showToast('Please enter your first name', 'error'); return; }
+  if (!F['fl'] || !F['fl'].trim()) { showToast('Please enter your last name / surname', 'error'); return; }
+  if (!F['fe'] || !F['fe'].includes('@')) { showToast('Please enter a valid email address', 'error'); return; }
+  if (!F['fp'] || !F['fp'].trim()) { showToast('Please enter your phone number', 'error'); return; }
+  if (!F['faddr'] || !F['faddr'].trim()) { showToast('Please enter your physical address', 'error'); return; }
+  buildStep(curStep + 1);
 }
 
 function stepNOK() {
@@ -439,13 +455,13 @@ function stepNOK() {
   <div class="info-note">This person will be contacted in case of emergency. Please provide accurate contact details.</div>
   <div class="g2">
     <div class="fg"><label>Full Name <span class="req">*</span></label>
-      <input id="nname" type="text" placeholder="Full name" required></div>
+      <input id="nname" type="text" placeholder="Full name"></div>
     <div class="fg"><label>Relationship</label>
       <input id="nrel" type="text" placeholder="e.g. Spouse, Parent, Sibling"></div>
   </div>
   <div class="g2" style="margin-top:8px;">
     <div class="fg"><label>Phone Number <span class="req">*</span></label>
-      <input id="nph" type="tel" placeholder="+27 xx xxx xxxx" required></div>
+      <input id="nph" type="tel" placeholder="+27 xx xxx xxxx"></div>
     <div class="fg"><label>Email Address</label>
       <input id="nem" type="email" placeholder="email@example.com"></div>
   </div>
@@ -457,9 +473,10 @@ function stepNOK() {
 }
 
 function validateNOK() {
-  if (!document.getElementById('nname')?.value?.trim()) { showToast('Please enter next of kin name', 'error'); return; }
-  if (!document.getElementById('nph')?.value?.trim()) { showToast('Please enter next of kin phone number', 'error'); return; }
-  nav(1);
+  saveCurrentFields();
+  if (!F['nname'] || !F['nname'].trim()) { showToast('Please enter next of kin name', 'error'); return; }
+  if (!F['nph'] || !F['nph'].trim()) { showToast('Please enter next of kin phone number', 'error'); return; }
+  buildStep(curStep + 1);
 }
 
 function stepChildren() {
@@ -497,19 +514,19 @@ function stepGroupInfo() {
   </div>
   <div class="g2">
     <div class="fg"><label>Group Leader First Name <span class="req">*</span></label>
-      <input id="ff" type="text" placeholder="First name" required></div>
+      <input id="ff" type="text" placeholder="First name"></div>
     <div class="fg"><label>Group Leader Surname <span class="req">*</span></label>
-      <input id="fl" type="text" placeholder="Surname" required></div>
+      <input id="fl" type="text" placeholder="Surname"></div>
   </div>
   <div class="g2" style="margin-top:8px;">
     <div class="fg"><label>Email Address <span class="req">*</span></label>
-      <input id="fe" type="email" placeholder="email@example.com" required></div>
+      <input id="fe" type="email" placeholder="email@example.com"></div>
     <div class="fg"><label>Phone / WhatsApp <span class="req">*</span></label>
-      <input id="fp" type="tel" placeholder="+27 xx xxx xxxx" required></div>
+      <input id="fp" type="tel" placeholder="+27 xx xxx xxxx"></div>
   </div>
   <div class="g2" style="margin-top:8px;">
     <div class="fg"><label>Ministry / Church Name <span class="req">*</span></label>
-      <input id="fmin" type="text" placeholder="Ministry name" required></div>
+      <input id="fmin" type="text" placeholder="Ministry name"></div>
     <div class="fg"><label>Province</label>
       <select id="fprov">
         <option>Gauteng</option><option>Western Cape</option><option>KwaZulu-Natal</option>
@@ -520,7 +537,7 @@ function stepGroupInfo() {
     </div>
   </div>
   <div class="fg" style="margin-top:8px;"><label>Number of Delegates <span class="req">*</span></label>
-    <input id="fgrp" type="number" min="2" value="10" placeholder="Minimum 2" oninput="calcTotal()"></div>
+    <input id="fgrp" type="number" min="2" value="10" oninput="F['fgrp']=this.value;calcTotal()"></div>
   <div id="grp-disc" style="margin-top:8px;"></div>
   </div>
   <div class="form-actions">
@@ -530,10 +547,11 @@ function stepGroupInfo() {
 }
 
 function validateGroupInfo() {
-  if (!document.getElementById('ff')?.value?.trim()) { showToast('Please enter leader name', 'error'); return; }
-  if (!document.getElementById('fe')?.value?.trim()) { showToast('Please enter email address', 'error'); return; }
-  if (!document.getElementById('fmin')?.value?.trim()) { showToast('Please enter ministry name', 'error'); return; }
-  nav(1);
+  saveCurrentFields();
+  if (!F['ff'] || !F['ff'].trim()) { showToast('Please enter leader name', 'error'); return; }
+  if (!F['fe'] || !F['fe'].includes('@')) { showToast('Please enter a valid email address', 'error'); return; }
+  if (!F['fmin'] || !F['fmin'].trim()) { showToast('Please enter ministry name', 'error'); return; }
+  buildStep(curStep + 1);
 }
 
 function stepGroupMembers() {
@@ -560,7 +578,7 @@ function stepAccom() {
     <div class="ac-card ${selAccom==='dormitory'?'sel':''}" id="ac-dormitory" onclick="setAccom('dormitory',this)">
       <span class="ac-badge">Individuals</span>
       <div class="ac-name">Dormitory</div>
-      <div class="ac-price" id="dorm-price">R1,650</div>
+      <div class="ac-price" id="dorm-price">R${F['fstu']==='yes'?'1,300':'1,650'}</div>
       <div class="ac-note">Full board included</div>
       <div class="ac-cap" style="color:var(--muted);">Max 300 people</div>
     </div>` : ''}
@@ -649,9 +667,19 @@ function openPayFast() {
 function stepConfirm() {
   const total = calcTotalNum();
   const disc = getDisc();
+  const fname = F['ff'] || '';
+  const lname = F['fl'] || '';
   return `
   <div class="fs"><div class="fs-t">Review Your Booking</div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:13px;margin-bottom:1rem;">
+    <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">Name</div>
+      <div style="font-weight:600;color:var(--navy);">${fname} ${lname}</div></div>
+    <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">Email</div>
+      <div style="font-weight:600;color:var(--navy);">${F['fe']||'—'}</div></div>
+    <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">Phone</div>
+      <div style="font-weight:600;color:var(--navy);">${F['fp']||'—'}</div></div>
+    <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">Ministry</div>
+      <div style="font-weight:600;color:var(--navy);">${F['fmin']||'—'}</div></div>
     <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">Registration Type</div>
       <div style="font-weight:600;color:var(--navy);">${regType.charAt(0).toUpperCase()+regType.slice(1)}</div></div>
     <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">Accommodation</div>
@@ -680,7 +708,7 @@ function stepConfirm() {
 
 // ── CALCULATIONS ──
 function getRate() {
-  const isStu = document.getElementById('fstu')?.value === 'yes';
+  const isStu = (F['fstu'] || 'no') === 'yes';
   if (selAccom === 'dormitory') return isStu ? 1300 : 1650;
   if (selAccom === 'guesthouse') return 1900;
   if (selAccom === 'couples') return 3000;
@@ -689,14 +717,14 @@ function getRate() {
 
 function getDisc() {
   if (regType !== 'group') return 0;
-  const s = parseInt(document.getElementById('fgrp')?.value) || 0;
+  const s = parseInt(F['fgrp'] || document.getElementById('fgrp')?.value) || 0;
   if (s >= 30) return 30; if (s >= 20) return 20; if (s >= 10) return 10; return 0;
 }
 
 function calcTotalNum() {
   const rate = getRate();
   if (regType === 'group') {
-    const s = parseInt(document.getElementById('fgrp')?.value) || 1;
+    const s = parseInt(F['fgrp'] || document.getElementById('fgrp')?.value) || 1;
     return Math.round(s * rate * (1 - getDisc() / 100));
   }
   if (regType === 'couple') return 3000 + children.length * 1300;
@@ -708,64 +736,64 @@ function calcTotal() {
   const el = document.getElementById('total-display');
   if (el) el.textContent = 'R' + total.toLocaleString();
 
-  // Update dorm price for student
-  const stu = document.getElementById('fstu');
   const dp = document.getElementById('dorm-price');
-  if (stu && dp) dp.textContent = stu.value === 'yes' ? 'R1,300' : 'R1,650';
+  if (dp) dp.textContent = (F['fstu']==='yes') ? 'R1,300' : 'R1,650';
 
-  // Group discount info
   const disc = getDisc();
   const di = document.getElementById('grp-disc');
   if (di) {
-    const s = parseInt(document.getElementById('fgrp')?.value) || 0;
+    const s = parseInt(F['fgrp'] || document.getElementById('fgrp')?.value) || 0;
     if (disc > 0) {
       di.innerHTML = `<div style="background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:8px 12px;font-size:12px;color:#166534;font-weight:600;">🎉 ${disc}% group discount applied — ${s} delegates × R${getRate()} = R${total.toLocaleString()}</div>`;
     } else if (s > 0) {
       di.innerHTML = `<div style="background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--muted);">Add 10 or more delegates to unlock group discounts.</div>`;
     }
   }
-
-  // Total note
   const tn = document.getElementById('total-note');
   if (tn && regType === 'group') {
-    const s = parseInt(document.getElementById('fgrp')?.value) || 1;
+    const s = parseInt(F['fgrp'] || document.getElementById('fgrp')?.value) || 1;
     tn.textContent = disc > 0 ? `${s} × R${getRate()} − ${disc}% = R${total.toLocaleString()}` : `${s} delegates × R${getRate()}`;
   }
 }
 
-// ── SUBMIT ──
+// ── SUBMIT (reads from F not DOM) ──
 async function submitForm() {
   const btn = document.getElementById('submit-btn');
   if (btn) btn.disabled = true;
 
-  const fname = document.getElementById('ff')?.value?.trim() || '';
-  const lname = document.getElementById('fl')?.value?.trim() || '';
-  if (!fname || !lname) { showToast('Missing required fields', 'error'); if(btn) btn.disabled=false; return; }
+  const fname = (F['ff'] || '').trim();
+  const lname = (F['fl'] || '').trim();
+
+  if (!fname || !lname) {
+    showToast('Name is missing — please go back to step 1 and re-enter your name', 'error');
+    if (btn) btn.disabled = false;
+    return;
+  }
 
   const total = calcTotalNum();
   let delegates = 1;
-  if (regType === 'group') delegates = parseInt(document.getElementById('fgrp')?.value) || 1;
+  if (regType === 'group') delegates = parseInt(F['fgrp']) || 1;
   else if (regType === 'couple') delegates = 2 + children.length;
 
   const payload = {
     ref_number: '',
     reg_type: regType,
-    is_student: document.getElementById('fstu')?.value === 'yes',
+    is_student: (F['fstu'] || 'no') === 'yes',
     first_name: fname,
     last_name: lname,
-    email: document.getElementById('fe')?.value?.trim() || '',
-    phone: document.getElementById('fp')?.value?.trim() || '',
-    gender: document.getElementById('fg-gen')?.value || '',
-    id_number: document.getElementById('fid')?.value?.trim() || '',
-    address: document.getElementById('faddr')?.value?.trim() || '',
-    province: document.getElementById('fprov')?.value || '',
-    ministry: document.getElementById('fmin')?.value?.trim() || '',
-    nok_name: document.getElementById('nname')?.value?.trim() || '',
-    nok_relation: document.getElementById('nrel')?.value?.trim() || '',
-    nok_phone: document.getElementById('nph')?.value?.trim() || '',
-    nok_email: document.getElementById('nem')?.value?.trim() || '',
+    email: (F['fe'] || '').trim(),
+    phone: (F['fp'] || '').trim(),
+    gender: F['fg-gen'] || '',
+    id_number: (F['fid'] || '').trim(),
+    address: (F['faddr'] || '').trim(),
+    province: F['fprov'] || '',
+    ministry: (F['fmin'] || '').trim(),
+    nok_name: (F['nname'] || '').trim(),
+    nok_relation: (F['nrel'] || '').trim(),
+    nok_phone: (F['nph'] || '').trim(),
+    nok_email: (F['nem'] || '').trim(),
     group_size: delegates,
-    group_members: document.getElementById('fmembers')?.value?.trim() || '',
+    group_members: (F['fmembers'] || '').trim(),
     discount_percent: getDisc(),
     children_count: children.length,
     children_details: children.length > 0 ? children : null,
@@ -798,17 +826,17 @@ async function submitForm() {
       <div class="ibr"><span>Total Due</span><span style="color:var(--orange);font-size:15px;font-weight:800;">R${total.toLocaleString()}</span></div>
       <div class="ibr"><span>Status</span><span>Pending payment confirmation</span></div>
     `;
+    F = {};
     goPage('success');
     showToast('Registration saved successfully!', 'success');
   } catch (err) {
     hideLoading();
     console.error(err);
-    showToast('Error saving registration. Please try again.', 'error');
+    showToast('Database error: ' + (err.message || 'Please try again'), 'error');
     if (btn) btn.disabled = false;
   }
 }
 
-// ── HELPERS ──
 function showLoading(msg) {
   document.getElementById('loading-text').textContent = msg || 'Loading...';
   document.getElementById('loading').classList.add('show');
@@ -819,7 +847,7 @@ function showToast(msg, type = '') {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = 'toast show' + (type ? ' ' + type : '');
-  setTimeout(() => t.classList.remove('show'), 3500);
+  setTimeout(() => t.classList.remove('show'), 4000);
 }
 </script>
 </body>
