@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>REACH Leaders Summit 2026 | Multi Ministries</title>
+<meta name="description" content="Register for the REACH Leaders Summit 2026 - 31 August to 3 September, Joy Unspeakable, Roodeplaat, Pretoria.">
+<link rel="icon" href="logo.jpg" type="image/jpeg">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#1a3060;--blue:#2255a4;--orange:#d94f1e;--gold:#c9972a;
+  --light:#f5f6fa;--white:#fff;--text:#1a1a2e;--muted:#6b7280;
+  --border:#d1d9e8;--success:#16a34a;--danger:#dc2626;
+}
+body{font-family:'Open Sans',sans-serif;background:var(--light);color:var(--text);min-height:100vh;font-size:14px;}
+.page{display:none;min-height:100vh;}
+.page.active{display:block;}
+
+/* NAV */
+.nav{background:var(--navy);padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:300;box-shadow:0 2px 12px rgba(0,0,0,0.35);}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo img{width:36px;height:36px;object-fit:contain;border-radius:4px;}
+.nav-logo-text{font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;color:#fff;line-height:1.15;}
+.nav-logo-text span{color:var(--orange);font-size:9px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;display:block;}
+.nav-right{display:flex;align-items:center;gap:8px;}
+.nav-event{font-size:10px;font-weight:600;color:rgba(255,255,255,0.4);letter-spacing:0.1em;text-transform:uppercase;display:none;}
+@media(min-width:560px){.nav-event{display:block;}}
+.nav-admin-link{color:rgba(255,255,255,0.5);font-size:12px;font-weight:600;font-family:'Montserrat',sans-serif;text-decoration:none;padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);transition:all 0.2s;}
+.nav-admin-link:hover{color:#fff;border-color:rgba(255,255,255,0.35);}
+
+/* HERO */
+.hero{background:var(--navy);padding:2.5rem 1.25rem 2rem;text-align:center;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 25% 60%,rgba(217,79,30,0.15),transparent 55%),radial-gradient(ellipse at 75% 40%,rgba(34,85,164,0.2),transparent 55%);pointer-events:none;}
+.hero-logo{width:88px;height:88px;object-fit:contain;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.4));margin-bottom:1.25rem;position:relative;}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(217,79,30,0.18);border:1px solid rgba(217,79,30,0.45);border-radius:100px;padding:4px 14px;margin-bottom:1rem;}
+.hero-badge span{font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--orange);font-family:'Montserrat',sans-serif;}
+.hero h1{font-family:'Montserrat',sans-serif;font-weight:900;font-size:clamp(1.9rem,5vw,3.2rem);color:#fff;line-height:1.05;letter-spacing:-0.02em;margin-bottom:0.25rem;position:relative;}
+.hero h1 em{color:var(--orange);font-style:normal;}
+.hero-tagline{font-size:11px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.4);margin:0.5rem 0 1.5rem;font-family:'Montserrat',sans-serif;position:relative;}
+.hero-tagline em{color:var(--orange);font-style:normal;}
+.hero-meta{display:flex;gap:0;justify-content:center;margin-bottom:2rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);border-radius:12px;overflow:hidden;max-width:440px;margin-left:auto;margin-right:auto;position:relative;}
+.hm{flex:1;padding:12px 8px;text-align:center;border-right:1px solid rgba(255,255,255,0.08);}
+.hm:last-child{border-right:none;}
+.hm strong{display:block;font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:#fff;margin-bottom:2px;}
+.hm span{font-size:10px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.07em;}
+.reg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:440px;margin:0 auto;position:relative;}
+.rtc{background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.1);border-radius:12px;padding:1.1rem 0.75rem;cursor:pointer;transition:all 0.2s;text-align:center;}
+.rtc:hover{border-color:var(--orange);background:rgba(217,79,30,0.1);transform:translateY(-2px);}
+.rtc-icon{font-size:22px;margin-bottom:6px;}
+.rtc-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:#fff;margin-bottom:3px;}
+.rtc-desc{font-size:10px;color:rgba(255,255,255,0.4);line-height:1.5;}
+
+/* PRICING */
+.pricing-wrap{max-width:660px;margin:1.25rem auto;padding:0 1rem;}
+.section-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:1rem;}
+.sc-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--orange);margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+.sc-title::after{content:'';flex:1;height:1px;background:rgba(217,79,30,0.2);}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;}
+.pc{border:1.5px solid var(--border);border-radius:10px;padding:12px;text-align:center;position:relative;}
+.pc-badge{position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:var(--orange);color:#fff;font-size:9px;font-weight:700;padding:2px 10px;border-radius:100px;font-family:'Montserrat',sans-serif;white-space:nowrap;}
+.pc-name{font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:var(--navy);margin-bottom:4px;}
+.pc-price{font-family:'Montserrat',sans-serif;font-weight:900;font-size:22px;color:var(--orange);}
+.pc-note{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4;}
+.pc-special{font-size:10px;color:var(--orange);font-weight:600;margin-top:4px;}
+.discount-banner{background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-top:10px;}
+.db-icon{width:34px;height:34px;background:var(--orange);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;color:#fff;font-weight:900;font-family:'Montserrat',sans-serif;}
+.db-t{font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:#fff;margin-bottom:2px;}
+.db-d{font-size:11px;color:rgba(255,255,255,0.5);}
+
+/* FORM */
+.form-wrap{max-width:660px;margin:0 auto;padding:1rem;}
+.steps-bar{display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem;overflow-x:auto;padding:4px 0;gap:0;}
+.ss{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.ss-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;border:2px solid var(--border);color:var(--muted);font-family:'Montserrat',sans-serif;transition:all 0.3s;background:#fff;}
+.ss-lbl{font-size:10px;font-weight:600;color:var(--muted);font-family:'Montserrat',sans-serif;white-space:nowrap;}
+.ss.active .ss-num{border-color:var(--orange);color:var(--orange);background:rgba(217,79,30,0.07);}
+.ss.active .ss-lbl{color:var(--navy);}
+.ss.done .ss-num{background:var(--orange);border-color:var(--orange);color:#fff;}
+.ss-line{width:18px;height:2px;background:var(--border);margin:0 1px;flex-shrink:0;transition:background 0.3s;}
+.ss-line.done{background:var(--orange);}
+.fs{background:#fff;border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:1rem;}
+.fs-t{font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--orange);margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
+.fs-t::after{content:'';flex:1;height:1px;background:rgba(217,79,30,0.2);}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+.fg label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:0.04em;text-transform:uppercase;}
+.fg input,.fg select,.fg textarea{background:#f8f9fb;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;color:var(--text);font-family:'Open Sans',sans-serif;transition:border-color 0.2s;outline:none;width:100%;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--orange);background:#fff;}
+.fg textarea{resize:vertical;min-height:72px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(max-width:500px){.g2,.g3{grid-template-columns:1fr;}}
+.req{color:var(--danger);}
+.note-box{background:rgba(217,79,30,0.07);border:1px solid rgba(217,79,30,0.22);border-radius:8px;padding:9px 13px;font-size:12px;color:#92400e;margin-bottom:10px;line-height:1.6;}
+.info-note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:9px 13px;font-size:12px;color:#1e40af;margin-bottom:10px;line-height:1.6;}
+
+/* BUTTONS */
+.btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:'Montserrat',sans-serif;letter-spacing:0.04em;border:none;display:inline-flex;align-items:center;gap:6px;}
+.btn-orange{background:var(--orange);color:#fff;}
+.btn-orange:hover{background:#c0441a;transform:translateY(-1px);}
+.btn-navy{background:var(--navy);color:#fff;}
+.btn-navy:hover{background:var(--blue);}
+.btn-outline{background:transparent;color:var(--navy);border:2px solid var(--border);}
+.btn-outline:hover{border-color:var(--navy);}
+.btn-sm{padding:7px 14px;font-size:11px;border-radius:6px;}
+.btn:disabled{opacity:0.6;cursor:not-allowed;transform:none!important;}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:0.5rem;}
+
+/* ACCOMMODATION */
+.ac-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;}
+.ac-card{border:2px solid var(--border);border-radius:10px;padding:11px;cursor:pointer;transition:all 0.2s;position:relative;}
+.ac-card:hover{border-color:var(--orange);}
+.ac-card.sel{border-color:var(--orange);background:rgba(217,79,30,0.05);}
+.ac-badge{position:absolute;top:7px;right:7px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;background:var(--navy);color:#fff;padding:2px 7px;border-radius:100px;font-family:'Montserrat',sans-serif;}
+.ac-name{font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:var(--navy);margin-bottom:2px;}
+.ac-price{font-family:'Montserrat',sans-serif;font-weight:900;font-size:18px;color:var(--orange);}
+.ac-note{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4;}
+.ac-cap{font-size:10px;margin-top:4px;}
+
+/* TOTAL BAR */
+.total-bar{background:linear-gradient(135deg,var(--navy),var(--blue));border-radius:12px;padding:1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;margin-top:1rem;}
+.tl{color:rgba(255,255,255,0.55);font-size:11px;font-family:'Montserrat',sans-serif;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;}
+.ta{font-family:'Montserrat',sans-serif;font-size:24px;font-weight:900;color:#fff;}
+.td{font-size:10px;color:rgba(255,255,255,0.38);margin-top:2px;}
+
+/* CHILDREN */
+.child-row{display:grid;grid-template-columns:1fr 80px auto;gap:8px;align-items:end;margin-bottom:8px;}
+.add-child{display:inline-flex;align-items:center;gap:6px;background:rgba(217,79,30,0.08);border:1px dashed var(--orange);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:12px;font-weight:700;color:var(--orange);font-family:'Montserrat',sans-serif;margin-top:4px;transition:background 0.2s;}
+.add-child:hover{background:rgba(217,79,30,0.15);}
+
+/* PAYMENT */
+.pay-opt{border:2px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all 0.2s;margin-bottom:10px;}
+.pay-opt:hover,.pay-opt.sel{border-color:var(--orange);background:rgba(217,79,30,0.04);}
+.pay-row{display:flex;align-items:center;gap:12px;}
+.pay-icon{width:40px;height:40px;border-radius:8px;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.pay-title{font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:var(--navy);}
+.pay-desc{font-size:11px;color:var(--muted);margin-top:2px;}
+.pay-body{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+.pay-body.open{display:block;}
+.pf-btn{display:block;background:var(--orange);color:#fff;text-align:center;padding:12px;border-radius:8px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;text-decoration:none;margin-top:8px;cursor:pointer;border:none;width:100%;transition:background 0.2s;}
+.pf-btn:hover{background:#c0441a;}
+.proof-note{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:10px 13px;font-size:12px;color:#856404;margin-top:8px;line-height:1.6;}
+.eft-box{background:#f8f9fb;border-radius:8px;padding:12px;font-size:12px;color:var(--text);line-height:2.2;margin-top:8px;}
+
+/* SUCCESS */
+.success-wrap{padding:2rem 1rem;text-align:center;max-width:520px;margin:0 auto;}
+.suc-icon{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--gold));display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;font-size:32px;}
+.suc-ref{background:var(--navy);border-radius:10px;padding:0.75rem 1.5rem;display:inline-block;margin:0.75rem 0;font-family:'Montserrat',sans-serif;font-weight:700;font-size:18px;color:var(--orange);letter-spacing:0.14em;}
+.info-box{background:#fff;border:1px solid var(--border);border-radius:10px;padding:1rem;margin:0.75rem 0;text-align:left;}
+.ibr{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid #f1f5f9;}
+.ibr:last-child{border-bottom:none;}
+.ibr span:first-child{color:var(--muted);}
+.ibr span:last-child{font-weight:600;color:var(--navy);}
+
+/* LOADING */
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(26,48,96,0.85);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.loading-overlay.show{display:flex;}
+.spinner{width:44px;height:44px;border:4px solid rgba(255,255,255,0.2);border-top-color:var(--orange);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{color:#fff;font-family:'Montserrat',sans-serif;font-weight:600;font-size:14px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;font-family:'Montserrat',sans-serif;z-index:1000;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.toast.show{opacity:1;}
+.toast.error{background:var(--danger);}
+.toast.success{background:var(--success);}
+
+footer{text-align:center;padding:2rem 1rem;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:2rem;}
+footer a{color:var(--orange);text-decoration:none;}
+</style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Saving your registration...</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" href="index.html">
+    <img src="logo.jpg" alt="Multi Ministries">
+    <div class="nav-logo-text">Multi Ministries <span>Revive · Empower · Connect</span></div>
+  </a>
+  <div class="nav-right">
+    <span class="nav-event">REACH Summit 2026</span>
+    <a class="nav-admin-link" href="admin.html">Admin →</a>
+  </div>
+</nav>
+
+<!-- HOME PAGE -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <img class="hero-logo" src="logo.jpg" alt="Multi Ministries Logo">
+    <div class="hero-badge"><span>Annual Leadership Conference</span></div>
+    <h1>REACH <em>Leaders</em><br>Summit 2026</h1>
+    <div class="hero-tagline"><em>Revive</em> · <em>Empower</em> · <em>Connect</em> for the Harvest</div>
+    <div class="hero-meta">
+      <div class="hm"><strong>31 Aug – 3 Sep</strong><span>Dates 2026</span></div>
+      <div class="hm"><strong>Joy Unspeakable</strong><span>Roodeplaat, Pretoria</span></div>
+      <div class="hm"><strong>Open</strong><span>Registration</span></div>
+    </div>
+    <div class="reg-row">
+      <div class="rtc" onclick="startReg('individual')">
+        <div class="rtc-icon">👤</div>
+        <div class="rtc-title">Individual</div>
+        <div class="rtc-desc">Register as a single delegate or student</div>
+      </div>
+      <div class="rtc" onclick="startReg('group')">
+        <div class="rtc-icon">👥</div>
+        <div class="rtc-title">Group / Ministry</div>
+        <div class="rtc-desc">10+ delegates unlock group discounts</div>
+      </div>
+    </div>
+    <div style="margin-top:1.5rem;font-size:10px;color:rgba(255,255,255,0.25);letter-spacing:0.08em;text-transform:uppercase;">Multi Ministries · Non-Profit · office@multiministries.co.za</div>
+  </div>
+
+  <div class="pricing-wrap">
+    <div class="section-card">
+      <div class="sc-title">Accommodation & Pricing</div>
+      <div class="pricing-grid" style="margin-bottom:12px;">
+        <div class="pc">
+          <div class="pc-name">Dormitory</div>
+          <div class="pc-price">R1,650</div>
+          <div class="pc-note">Individuals only · Max 300<br>Includes all meals</div>
+          <div class="pc-special">Students: R1,300</div>
+        </div>
+        <div class="pc">
+          <div class="pc-badge">Couples Only</div>
+          <div class="pc-name">Couples Room</div>
+          <div class="pc-price">R3,000</div>
+          <div class="pc-note">Per couple · children under 14: R1,300 each</div>
+        </div>
+        <div class="pc">
+          <div class="pc-name">Guest House</div>
+          <div class="pc-price">R1,900</div>
+          <div class="pc-note">Max 120 persons<br>Includes all meals</div>
+        </div>
+      </div>
+      <div class="discount-banner">
+        <div class="db-icon">%</div>
+        <div><div class="db-t">Group Discount Tiers</div><div class="db-d">10 delegates = 10% · 20 delegates = 20% · 30+ delegates = 30% off per person</div></div>
+      </div>
+      <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:10px;">All packages include full accommodation and all meals for the conference duration</p>
+    </div>
+  </div>
+</div>
+
+<!-- FORM PAGE -->
+<div class="page" id="page-form">
+  <div class="form-wrap">
+    <div class="steps-bar" id="steps-bar"></div>
+    <div id="steps-content"></div>
+  </div>
+</div>
+
+<!-- SUCCESS PAGE -->
+<div class="page" id="page-success">
+  <div class="success-wrap">
+    <div class="suc-icon">✓</div>
+    <h2 style="font-family:'Montserrat',sans-serif;font-weight:900;font-size:1.5rem;color:var(--navy);margin-bottom:0.5rem;">Registration Complete!</h2>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:4px;">Your reference number:</p>
+    <div class="suc-ref" id="suc-ref">REACH-0000</div>
+    <div class="info-box" id="suc-summary"></div>
+    <div class="info-box">
+      <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--navy);margin-bottom:8px;">EFT Banking Details</div>
+      <div style="font-size:12px;line-height:2.2;">
+        Bank: <strong>First National Bank</strong><br>
+        Account Name: <strong>Multi Ministries</strong><br>
+        Account No: <strong>XXXXXXXXXXXXXXX</strong><br>
+        Branch Code: <strong>250655</strong><br>
+        Reference: <strong style="color:var(--orange);" id="suc-eft-ref">Surname-REACH2026</strong>
+      </div>
+    </div>
+    <div class="proof-note">📋 <strong>Important:</strong> Carry your proof of payment to Joy Unspeakable for check-in. Your reference number will be verified at the entrance.</div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:1.25rem;">
+      <button class="btn btn-navy" onclick="goPage('home')">Back to Home</button>
+      <button class="btn btn-outline" onclick="window.print()">Print Confirmation</button>
+    </div>
+    <p style="margin-top:1.5rem;font-size:10px;color:var(--muted);">Multi Ministries · Revive · Empower · Connect for the Harvest<br>office@multiministries.co.za · www.multiministries.co.za</p>
+  </div>
+</div>
+
+<footer>
+  <img src="logo.jpg" style="width:32px;height:32px;object-fit:contain;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto;" alt="Logo">
+  <strong style="color:var(--navy);">Multi Ministries</strong> · Non-Profit Company<br>
+  5 Limpopo Avenue, Musina, Limpopo 0900 · <a href="mailto:office@multiministries.co.za">office@multiministries.co.za</a><br>
+  <a href="https://www.multiministries.co.za" target="_blank">www.multiministries.co.za</a>
+  <div style="margin-top:8px;color:rgba(0,0,0,0.25);">REACH Leaders Summit 2026 · Joy Unspeakable, Roodeplaat, Pretoria</div>
+</footer>
+
+<script>
+// ── SUPABASE INIT ──
+const SUPABASE_URL = 'https://ojngldvungpgphoqyqnh.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qbmdsZHZ1bmdwZ3Bob3F5cW5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjEwOTIsImV4cCI6MjA4OTMzNzA5Mn0.XPBZZJjccWLKwdz2e44vy8iFW7CW6Ps_T3tJalJjKEU';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+// ── STATE ──
+let regType = 'individual', curStep = 1, children = [], selAccom = 'dormitory', selPay = 'payfast';
+
+// ── NAVIGATION ──
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function startReg(type) {
+  regType = type; curStep = 1; children = [];
+  selAccom = type === 'couple' ? 'couples' : 'dormitory';
+  selPay = 'payfast';
+  buildStep(1);
+  goPage('form');
+}
+
+// ── STEPS CONFIG ──
+const STEPS = {
+  individual: ['Personal', 'Next of Kin', 'Accommodation', 'Payment', 'Confirm'],
+  group:      ['Ministry Info', 'Members', 'Accommodation', 'Payment', 'Confirm'],
+  couple:     ['Personal', 'Next of Kin', 'Children', 'Accommodation', 'Payment', 'Confirm']
+};
+
+function buildStepsBar() {
+  const steps = STEPS[regType];
+  let h = '';
+  steps.forEach((s, i) => {
+    const n = i + 1;
+    const cls = n === curStep ? 'ss active' : n < curStep ? 'ss done' : 'ss';
+    h += `<div class="${cls}"><div class="ss-num">${n < curStep ? '✓' : n}</div><div class="ss-lbl">${s}</div></div>`;
+    if (n < steps.length) h += `<div class="ss-line${n < curStep ? ' done' : ''}"></div>`;
+  });
+  document.getElementById('steps-bar').innerHTML = h;
+}
+
+function buildStep(n) {
+  curStep = n;
+  buildStepsBar();
+  const total = STEPS[regType].length;
+  let html = '';
+  if (regType === 'individual') {
+    if (n === 1) html = stepPersonal(false);
+    else if (n === 2) html = stepNOK();
+    else if (n === 3) html = stepAccom();
+    else if (n === 4) html = stepPayment();
+    else html = stepConfirm();
+  } else if (regType === 'couple') {
+    if (n === 1) html = stepPersonal(true);
+    else if (n === 2) html = stepNOK();
+    else if (n === 3) html = stepChildren();
+    else if (n === 4) html = stepAccom();
+    else if (n === 5) html = stepPayment();
+    else html = stepConfirm();
+  } else {
+    if (n === 1) html = stepGroupInfo();
+    else if (n === 2) html = stepGroupMembers();
+    else if (n === 3) html = stepAccom();
+    else if (n === 4) html = stepPayment();
+    else html = stepConfirm();
+  }
+  document.getElementById('steps-content').innerHTML = html;
+  calcTotal();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nav(d) { buildStep(curStep + d); }
+
+// ── STEP BUILDERS ──
+function stepPersonal(isCouple) {
+  return `
+  <div class="fs"><div class="fs-t">${isCouple ? 'Couple Details' : 'Personal Details'}</div>
+  ${isCouple ? `<div class="note-box">Both spouses are registered under one booking. Children under 14 can be added next. Children 14 and older must register individually.</div>` : ''}
+  <div class="g2">
+    <div class="fg"><label>${isCouple ? 'Names (both spouses)' : 'First Name'} <span class="req">*</span></label>
+      <input id="ff" type="text" placeholder="${isCouple ? 'e.g. John & Mary' : 'First name'}" required></div>
+    <div class="fg"><label>Last Name / Surname <span class="req">*</span></label>
+      <input id="fl" type="text" placeholder="Surname" required></div>
+  </div>
+  <div class="g2" style="margin-top:8px;">
+    <div class="fg"><label>Email Address <span class="req">*</span></label>
+      <input id="fe" type="email" placeholder="email@example.com" required></div>
+    <div class="fg"><label>Phone / WhatsApp <span class="req">*</span></label>
+      <input id="fp" type="tel" placeholder="+27 xx xxx xxxx" required></div>
+  </div>
+  ${!isCouple ? `
+  <div class="g2" style="margin-top:8px;">
+    <div class="fg"><label>Gender</label>
+      <select id="fg-gen"><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option></select></div>
+    <div class="fg"><label>ID / Passport Number</label>
+      <input id="fid" type="text" placeholder="Optional"></div>
+  </div>
+  <div class="fg" style="margin-top:8px;"><label>Are you a student?</label>
+    <select id="fstu" onchange="calcTotal()">
+      <option value="no">No — standard rate applies</option>
+      <option value="yes">Yes — student rate R1,300 (dormitory only)</option>
+    </select>
+  </div>` : ''}
+  <div class="g2" style="margin-top:8px;">
+    <div class="fg"><label>Ministry / Church</label>
+      <input id="fmin" type="text" placeholder="Your ministry or church name"></div>
+    <div class="fg"><label>Province</label>
+      <select id="fprov">
+        <option>Gauteng</option><option>Western Cape</option><option>KwaZulu-Natal</option>
+        <option>Eastern Cape</option><option>Limpopo</option><option>Mpumalanga</option>
+        <option>North West</option><option>Free State</option><option>Northern Cape</option>
+        <option>Outside South Africa</option>
+      </select>
+    </div>
+  </div>
+  <div class="fg" style="margin-top:8px;"><label>Physical Address <span class="req">*</span></label>
+    <textarea id="faddr" placeholder="Street, City, Province, Postal Code" required></textarea></div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline btn-sm" onclick="goPage('home')">← Back</button>
+    <button class="btn btn-orange btn-sm" onclick="validatePersonal()">Continue →</button>
+  </div>`;
+}
+
+function validatePersonal() {
+  const fn = document.getElementById('ff')?.value?.trim();
+  const ln = document.getElementById('fl')?.value?.trim();
+  const em = document.getElementById('fe')?.value?.trim();
+  const ph = document.getElementById('fp')?.value?.trim();
+  const ad = document.getElementById('faddr')?.value?.trim();
+  if (!fn || !ln) { showToast('Please enter first and last name', 'error'); return; }
+  if (!em || !em.includes('@')) { showToast('Please enter a valid email address', 'error'); return; }
+  if (!ph) { showToast('Please enter a phone number', 'error'); return; }
+  if (!ad) { showToast('Please enter your physical address', 'error'); return; }
+  nav(1);
+}
+
+function stepNOK() {
+  return `
+  <div class="fs"><div class="fs-t">Emergency / Next of Kin Contact</div>
+  <div class="info-note">This person will be contacted in case of emergency. Please provide accurate contact details.</div>
+  <div class="g2">
+    <div class="fg"><label>Full Name <span class="req">*</span></label>
+      <input id="nname" type="text" placeholder="Full name" required></div>
+    <div class="fg"><label>Relationship</label>
+      <input id="nrel" type="text" placeholder="e.g. Spouse, Parent, Sibling"></div>
+  </div>
+  <div class="g2" style="margin-top:8px;">
+    <div class="fg"><label>Phone Number <span class="req">*</span></label>
+      <input id="nph" type="tel" placeholder="+27 xx xxx xxxx" required></div>
+    <div class="fg"><label>Email Address</label>
+      <input id="nem" type="email" placeholder="email@example.com"></div>
+  </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline btn-sm" onclick="nav(-1)">← Back</button>
+    <button class="btn btn-orange btn-sm" onclick="validateNOK()">Continue →</button>
+  </div>`;
+}
+
+function validateNOK() {
+  if (!document.getElementById('nname')?.value?.trim()) { showToast('Please enter next of kin name', 'error'); return; }
+  if (!document.getElementById('nph')?.value?.trim()) { showToast('Please enter next of kin phone number', 'error'); return; }
+  nav(1);
+}
+
+function stepChildren() {
+  let rows = children.map((c, i) => `
+    <div class="child-row">
+      <div class="fg"><label>Child ${i+1} Full Name</label>
+        <input type="text" value="${c.name}" placeholder="Full name" onchange="children[${i}].name=this.value"></div>
+      <div class="fg"><label>Age</label>
+        <input type="number" min="1" max="13" value="${c.age}" onchange="children[${i}].age=parseInt(this.value);calcTotal()"></div>
+      <button class="btn btn-outline btn-sm" style="align-self:flex-end;margin-bottom:10px;color:var(--danger);border-color:var(--danger);" onclick="children.splice(${i},1);buildStep(curStep)">✕</button>
+    </div>`).join('');
+  return `
+  <div class="fs"><div class="fs-t">Children (Under 14 Only)</div>
+  <div class="note-box">⚠️ Children 14 years and older must register as individual delegates. Each child under 14 costs <strong>R1,300</strong> — includes all accommodation and meals.</div>
+  <div id="child-list">${rows}</div>
+  <div class="add-child" onclick="children.push({name:'',age:5});buildStep(curStep)">+ Add Child</div>
+  <div class="total-bar" style="margin-top:1rem;">
+    <div><div class="tl">Children</div><div class="td">${children.length} child(ren) × R1,300</div></div>
+    <div class="ta">R${(children.length * 1300).toLocaleString()}</div>
+  </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline btn-sm" onclick="nav(-1)">← Back</button>
+    <button class="btn btn-orange btn-sm" onclick="nav(1)">Continue →</button>
+  </div>`;
+}
+
+function stepGroupInfo() {
+  return `
+  <div class="fs"><div class="fs-t">Ministry / Group Details</div>
+  <div class="discount-banner" style="margin-bottom:1rem;">
+    <div class="db-icon">%</div>
+    <div><div class="db-t">Group Discount Tiers</div>
+    <div class="db-d">10 delegates = 10% off · 20 delegates = 20% off · 30+ delegates = 30% off per person</div></div>
+  </div>
+  <div class="g2">
+    <div class="fg"><label>Group Leader First Name <span class="req">*</span></label>
+      <input id="ff" type="text" placeholder="First name" required></div>
+    <div class="fg"><label>Group Leader Surname <span class="req">*</span></label>
+      <input id="fl" type="text" placeholder="Surname" required></div>
+  </div>
+  <div class="g2" style="margin-top:8px;">
+    <div class="fg"><label>Email Address <span class="req">*</span></label>
+      <input id="fe" type="email" placeholder="email@example.com" required></div>
+    <div class="fg"><label>Phone / WhatsApp <span class="req">*</span></label>
+      <input id="fp" type="tel" placeholder="+27 xx xxx xxxx" required></div>
+  </div>
+  <div class="g2" style="margin-top:8px;">
+    <div class="fg"><label>Ministry / Church Name <span class="req">*</span></label>
+      <input id="fmin" type="text" placeholder="Ministry name" required></div>
+    <div class="fg"><label>Province</label>
+      <select id="fprov">
+        <option>Gauteng</option><option>Western Cape</option><option>KwaZulu-Natal</option>
+        <option>Eastern Cape</option><option>Limpopo</option><option>Mpumalanga</option>
+        <option>North West</option><option>Free State</option><option>Northern Cape</option>
+        <option>Outside South Africa</option>
+      </select>
+    </div>
+  </div>
+  <div class="fg" style="margin-top:8px;"><label>Number of Delegates <span class="req">*</span></label>
+    <input id="fgrp" type="number" min="2" value="10" placeholder="Minimum 2" oninput="calcTotal()"></div>
+  <div id="grp-disc" style="margin-top:8px;"></div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline btn-sm" onclick="goPage('home')">← Back</button>
+    <button class="btn btn-orange btn-sm" onclick="validateGroupInfo()">Continue →</button>
+  </div>`;
+}
+
+function validateGroupInfo() {
+  if (!document.getElementById('ff')?.value?.trim()) { showToast('Please enter leader name', 'error'); return; }
+  if (!document.getElementById('fe')?.value?.trim()) { showToast('Please enter email address', 'error'); return; }
+  if (!document.getElementById('fmin')?.value?.trim()) { showToast('Please enter ministry name', 'error'); return; }
+  nav(1);
+}
+
+function stepGroupMembers() {
+  return `
+  <div class="fs"><div class="fs-t">Group Member Names</div>
+  <div class="note-box">List all delegate names below (one name per line). The group leader is responsible for all delegates and their payments. Full personal details must be available at check-in.</div>
+  <div class="fg"><label>Delegate Names — one per line</label>
+    <textarea id="fmembers" style="min-height:180px;" placeholder="John Smith&#10;Mary Dlamini&#10;Peter van Zyl&#10;Sarah Mokoena&#10;..."></textarea>
+  </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline btn-sm" onclick="nav(-1)">← Back</button>
+    <button class="btn btn-orange btn-sm" onclick="nav(1)">Continue →</button>
+  </div>`;
+}
+
+function stepAccom() {
+  const isCouple = regType === 'couple';
+  return `
+  <div class="fs"><div class="fs-t">Accommodation Selection</div>
+  <div class="info-note">All packages include full accommodation and all meals for the entire conference — 31 August to 3 September 2026 at Joy Unspeakable, Roodeplaat.</div>
+  <div class="ac-grid">
+    ${!isCouple ? `
+    <div class="ac-card ${selAccom==='dormitory'?'sel':''}" id="ac-dormitory" onclick="setAccom('dormitory',this)">
+      <span class="ac-badge">Individuals</span>
+      <div class="ac-name">Dormitory</div>
+      <div class="ac-price" id="dorm-price">R1,650</div>
+      <div class="ac-note">Full board included</div>
+      <div class="ac-cap" style="color:var(--muted);">Max 300 people</div>
+    </div>` : ''}
+    ${isCouple ? `
+    <div class="ac-card sel" id="ac-couples">
+      <span class="ac-badge">Couples</span>
+      <div class="ac-name">Couples Room</div>
+      <div class="ac-price">R3,000</div>
+      <div class="ac-note">Per couple · + R1,300 per child under 14</div>
+    </div>` : ''}
+    ${!isCouple ? `
+    <div class="ac-card ${selAccom==='guesthouse'?'sel':''}" id="ac-guesthouse" onclick="setAccom('guesthouse',this)">
+      <div class="ac-name">Guest House</div>
+      <div class="ac-price">R1,900</div>
+      <div class="ac-note">Full board included</div>
+      <div class="ac-cap" style="color:var(--muted);">Max 120 people</div>
+    </div>` : ''}
+  </div>
+  <div class="total-bar" style="margin-top:1rem;">
+    <div><div class="tl">Total Amount Due</div><div class="td" id="total-note">Accommodation + meals included</div></div>
+    <div class="ta" id="total-display">R0</div>
+  </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline btn-sm" onclick="nav(-1)">← Back</button>
+    <button class="btn btn-orange btn-sm" onclick="nav(1)">Continue →</button>
+  </div>`;
+}
+
+function setAccom(type, el) {
+  selAccom = type;
+  document.querySelectorAll('.ac-card').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel');
+  calcTotal();
+}
+
+function stepPayment() {
+  return `
+  <div class="fs"><div class="fs-t">Select Payment Method</div>
+  <div class="pay-opt ${selPay==='payfast'?'sel':''}" id="pay-opt-pf" onclick="selectPay('payfast')">
+    <div class="pay-row">
+      <div class="pay-icon">💳</div>
+      <div>
+        <div class="pay-title">Pay Online — PayFast</div>
+        <div class="pay-desc">Credit/debit card, EFT, SnapScan, Zapper · Secure payment gateway</div>
+      </div>
+    </div>
+    <div class="pay-body ${selPay==='payfast'?'open':''}" id="pb-pf">
+      <div class="note-box">Enter your total amount on the PayFast page. You <strong>must carry your proof of payment</strong> to the venue for check-in.</div>
+      <div class="fg"><label>Amount you are paying (R)</label>
+        <input id="pay-amt" type="number" placeholder="e.g. 1650" min="0" style="font-size:16px;font-weight:700;"></div>
+      <button class="pf-btn" onclick="openPayFast()">Pay Securely via PayFast →</button>
+    </div>
+  </div>
+  <div class="pay-opt ${selPay==='venue'?'sel':''}" id="pay-opt-v" onclick="selectPay('venue')">
+    <div class="pay-row">
+      <div class="pay-icon">🏠</div>
+      <div>
+        <div class="pay-title">Pay at Venue</div>
+        <div class="pay-desc">Pay cash or card on arrival at Joy Unspeakable, Roodeplaat</div>
+      </div>
+    </div>
+    <div class="pay-body ${selPay==='venue'?'open':''}" id="pb-v">
+      <div class="proof-note">Your registration confirmation will serve as your booking. Payment will be collected at the entrance on arrival. Please have the correct amount ready.</div>
+    </div>
+  </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline btn-sm" onclick="nav(-1)">← Back</button>
+    <button class="btn btn-orange btn-sm" onclick="nav(1)">Review Booking →</button>
+  </div>`;
+}
+
+function selectPay(type) {
+  selPay = type;
+  document.querySelectorAll('.pay-opt').forEach(p => p.classList.remove('sel'));
+  document.querySelectorAll('.pay-body').forEach(b => b.classList.remove('open'));
+  document.getElementById('pay-opt-' + (type==='payfast'?'pf':'v'))?.classList.add('sel');
+  document.getElementById('pb-' + (type==='payfast'?'pf':'v'))?.classList.add('open');
+}
+
+function openPayFast() {
+  window.open('https://payment.payfast.io/eng/process/payment/5bd6a164-6767-428e-b090-756959a8edb3', '_blank');
+}
+
+function stepConfirm() {
+  const total = calcTotalNum();
+  const disc = getDisc();
+  return `
+  <div class="fs"><div class="fs-t">Review Your Booking</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:13px;margin-bottom:1rem;">
+    <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">Registration Type</div>
+      <div style="font-weight:600;color:var(--navy);">${regType.charAt(0).toUpperCase()+regType.slice(1)}</div></div>
+    <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">Accommodation</div>
+      <div style="font-weight:600;color:var(--navy);">${selAccom.charAt(0).toUpperCase()+selAccom.slice(1)}</div></div>
+    <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">Payment Method</div>
+      <div style="font-weight:600;color:var(--navy);">${selPay==='payfast'?'PayFast (Online)':'Pay at Venue'}</div></div>
+    ${children.length > 0 ? `
+    <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">Children</div>
+      <div style="font-weight:600;color:var(--navy);">${children.length} child(ren) under 14</div></div>` : ''}
+    ${disc > 0 ? `
+    <div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;">Group Discount</div>
+      <div style="font-weight:600;color:var(--success);">-${disc}% applied</div></div>` : ''}
+  </div>
+  <div class="info-note">📅 <strong>31 August – 3 September 2026</strong> at Joy Unspeakable, Roodeplaat, Pretoria<br>
+  📋 Bring proof of payment + this confirmation for check-in</div>
+  <div class="total-bar">
+    <div><div class="tl">Total Amount Due</div></div>
+    <div class="ta">R${total.toLocaleString()}</div>
+  </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn btn-outline btn-sm" onclick="nav(-1)">← Back</button>
+    <button class="btn btn-orange" onclick="submitForm()" id="submit-btn">Complete Registration ✓</button>
+  </div>`;
+}
+
+// ── CALCULATIONS ──
+function getRate() {
+  const isStu = document.getElementById('fstu')?.value === 'yes';
+  if (selAccom === 'dormitory') return isStu ? 1300 : 1650;
+  if (selAccom === 'guesthouse') return 1900;
+  if (selAccom === 'couples') return 3000;
+  return 0;
+}
+
+function getDisc() {
+  if (regType !== 'group') return 0;
+  const s = parseInt(document.getElementById('fgrp')?.value) || 0;
+  if (s >= 30) return 30; if (s >= 20) return 20; if (s >= 10) return 10; return 0;
+}
+
+function calcTotalNum() {
+  const rate = getRate();
+  if (regType === 'group') {
+    const s = parseInt(document.getElementById('fgrp')?.value) || 1;
+    return Math.round(s * rate * (1 - getDisc() / 100));
+  }
+  if (regType === 'couple') return 3000 + children.length * 1300;
+  return rate;
+}
+
+function calcTotal() {
+  const total = calcTotalNum();
+  const el = document.getElementById('total-display');
+  if (el) el.textContent = 'R' + total.toLocaleString();
+
+  // Update dorm price for student
+  const stu = document.getElementById('fstu');
+  const dp = document.getElementById('dorm-price');
+  if (stu && dp) dp.textContent = stu.value === 'yes' ? 'R1,300' : 'R1,650';
+
+  // Group discount info
+  const disc = getDisc();
+  const di = document.getElementById('grp-disc');
+  if (di) {
+    const s = parseInt(document.getElementById('fgrp')?.value) || 0;
+    if (disc > 0) {
+      di.innerHTML = `<div style="background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:8px 12px;font-size:12px;color:#166534;font-weight:600;">🎉 ${disc}% group discount applied — ${s} delegates × R${getRate()} = R${total.toLocaleString()}</div>`;
+    } else if (s > 0) {
+      di.innerHTML = `<div style="background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:12px;color:var(--muted);">Add 10 or more delegates to unlock group discounts.</div>`;
+    }
+  }
+
+  // Total note
+  const tn = document.getElementById('total-note');
+  if (tn && regType === 'group') {
+    const s = parseInt(document.getElementById('fgrp')?.value) || 1;
+    tn.textContent = disc > 0 ? `${s} × R${getRate()} − ${disc}% = R${total.toLocaleString()}` : `${s} delegates × R${getRate()}`;
+  }
+}
+
+// ── SUBMIT ──
+async function submitForm() {
+  const btn = document.getElementById('submit-btn');
+  if (btn) btn.disabled = true;
+
+  const fname = document.getElementById('ff')?.value?.trim() || '';
+  const lname = document.getElementById('fl')?.value?.trim() || '';
+  if (!fname || !lname) { showToast('Missing required fields', 'error'); if(btn) btn.disabled=false; return; }
+
+  const total = calcTotalNum();
+  let delegates = 1;
+  if (regType === 'group') delegates = parseInt(document.getElementById('fgrp')?.value) || 1;
+  else if (regType === 'couple') delegates = 2 + children.length;
+
+  const payload = {
+    ref_number: '',
+    reg_type: regType,
+    is_student: document.getElementById('fstu')?.value === 'yes',
+    first_name: fname,
+    last_name: lname,
+    email: document.getElementById('fe')?.value?.trim() || '',
+    phone: document.getElementById('fp')?.value?.trim() || '',
+    gender: document.getElementById('fg-gen')?.value || '',
+    id_number: document.getElementById('fid')?.value?.trim() || '',
+    address: document.getElementById('faddr')?.value?.trim() || '',
+    province: document.getElementById('fprov')?.value || '',
+    ministry: document.getElementById('fmin')?.value?.trim() || '',
+    nok_name: document.getElementById('nname')?.value?.trim() || '',
+    nok_relation: document.getElementById('nrel')?.value?.trim() || '',
+    nok_phone: document.getElementById('nph')?.value?.trim() || '',
+    nok_email: document.getElementById('nem')?.value?.trim() || '',
+    group_size: delegates,
+    group_members: document.getElementById('fmembers')?.value?.trim() || '',
+    discount_percent: getDisc(),
+    children_count: children.length,
+    children_details: children.length > 0 ? children : null,
+    accommodation: selAccom,
+    delegates: delegates,
+    total_amount: total,
+    payment_method: selPay,
+    payment_status: 'Pending',
+    checked_in: false,
+    notes: ''
+  };
+
+  showLoading('Saving your registration...');
+  try {
+    const { data, error } = await sb.from('registrations').insert([payload]).select().single();
+    hideLoading();
+    if (error) throw error;
+
+    document.getElementById('suc-ref').textContent = data.ref_number;
+    document.getElementById('suc-eft-ref').textContent = lname + '-REACH2026';
+    document.getElementById('suc-summary').innerHTML = `
+      <div class="ibr"><span>Name</span><span>${fname} ${lname}</span></div>
+      <div class="ibr"><span>Registration Type</span><span>${regType.charAt(0).toUpperCase()+regType.slice(1)}</span></div>
+      <div class="ibr"><span>Ministry</span><span>${payload.ministry || '—'}</span></div>
+      <div class="ibr"><span>Accommodation</span><span>${selAccom.charAt(0).toUpperCase()+selAccom.slice(1)}</span></div>
+      <div class="ibr"><span>Delegates</span><span>${delegates}</span></div>
+      ${children.length ? `<div class="ibr"><span>Children</span><span>${children.length}</span></div>` : ''}
+      ${getDisc() ? `<div class="ibr"><span>Group Discount</span><span style="color:var(--success);">-${getDisc()}%</span></div>` : ''}
+      <div class="ibr"><span>Payment Method</span><span>${selPay === 'payfast' ? 'PayFast (Online)' : 'Pay at Venue'}</span></div>
+      <div class="ibr"><span>Total Due</span><span style="color:var(--orange);font-size:15px;font-weight:800;">R${total.toLocaleString()}</span></div>
+      <div class="ibr"><span>Status</span><span>Pending payment confirmation</span></div>
+    `;
+    goPage('success');
+    showToast('Registration saved successfully!', 'success');
+  } catch (err) {
+    hideLoading();
+    console.error(err);
+    showToast('Error saving registration. Please try again.', 'error');
+    if (btn) btn.disabled = false;
+  }
+}
+
+// ── HELPERS ──
+function showLoading(msg) {
+  document.getElementById('loading-text').textContent = msg || 'Loading...';
+  document.getElementById('loading').classList.add('show');
+}
+function hideLoading() { document.getElementById('loading').classList.remove('show'); }
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>

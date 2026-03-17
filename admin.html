@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Admin Dashboard | REACH 2026 | Multi Ministries</title>
+<link rel="icon" href="logo.jpg" type="image/jpeg">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--navy:#1a3060;--blue:#2255a4;--orange:#d94f1e;--gold:#c9972a;--light:#f5f6fa;--white:#fff;--text:#1a1a2e;--muted:#6b7280;--border:#d1d9e8;--success:#16a34a;--danger:#dc2626;}
+body{font-family:'Open Sans',sans-serif;background:var(--light);color:var(--text);min-height:100vh;font-size:14px;}
+.page{display:none;min-height:100vh;}
+.page.active{display:block;}
+
+/* NAV */
+.nav{background:var(--navy);padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:300;box-shadow:0 2px 12px rgba(0,0,0,0.35);}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo img{width:36px;height:36px;object-fit:contain;border-radius:4px;}
+.nav-logo-text{font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;color:#fff;line-height:1.15;}
+.nav-logo-text span{color:var(--orange);font-size:9px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;display:block;}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.nav-user{font-size:11px;color:rgba(255,255,255,0.5);font-family:'Montserrat',sans-serif;display:none;}
+@media(min-width:560px){.nav-user{display:block;}}
+.btn-signout{background:transparent;color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.2);padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.2s;}
+.btn-signout:hover{color:#fff;border-color:rgba(255,255,255,0.4);}
+
+/* LOGIN */
+.login-wrap{max-width:380px;margin:4rem auto;padding:1rem;}
+.login-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:2rem;text-align:center;}
+.login-logo{width:70px;height:70px;object-fit:contain;margin:0 auto 1rem;display:block;}
+.login-title{font-family:'Montserrat',sans-serif;font-weight:800;font-size:16px;color:var(--navy);margin-bottom:4px;}
+.login-sub{font-size:12px;color:var(--muted);margin-bottom:1.5rem;}
+.fg{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;text-align:left;}
+.fg label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:0.04em;text-transform:uppercase;}
+.fg input{background:#f8f9fb;border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Open Sans',sans-serif;outline:none;transition:border-color 0.2s;width:100%;}
+.fg input:focus{border-color:var(--orange);}
+
+/* BUTTONS */
+.btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:'Montserrat',sans-serif;border:none;display:inline-flex;align-items:center;gap:6px;}
+.btn-orange{background:var(--orange);color:#fff;}
+.btn-orange:hover{background:#c0441a;}
+.btn-navy{background:var(--navy);color:#fff;}
+.btn-navy:hover{background:var(--blue);}
+.btn-outline{background:transparent;color:var(--navy);border:2px solid var(--border);}
+.btn-outline:hover{border-color:var(--navy);}
+.btn-sm{padding:7px 14px;font-size:11px;border-radius:6px;}
+.btn-xs{padding:5px 10px;font-size:11px;border-radius:6px;}
+.btn-edit{background:#fff7ed;color:#92400e;border:1px solid #fcd34d;font-family:'Montserrat',sans-serif;font-weight:700;cursor:pointer;}
+.btn-del{background:#fee2e2;color:var(--danger);border:1px solid #fca5a5;font-family:'Montserrat',sans-serif;font-weight:700;cursor:pointer;}
+.btn-ci{background:#dcfce7;color:#166534;border:1px solid #86efac;font-family:'Montserrat',sans-serif;font-weight:700;cursor:pointer;}
+.btn-cid{background:#16a34a;color:#fff;border:1px solid #16a34a;font-family:'Montserrat',sans-serif;font-weight:700;cursor:default;}
+
+/* DASHBOARD */
+.dash-wrap{padding:1rem;max-width:1200px;margin:0 auto;}
+.dash-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:10px;}
+.dash-hdr h2{font-family:'Montserrat',sans-serif;font-weight:800;font-size:18px;color:var(--navy);}
+.dash-hdr p{font-size:11px;color:var(--muted);margin-top:2px;}
+.dash-hdr-btns{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1.25rem;}
+@media(min-width:640px){.stats-grid{grid-template-columns:repeat(4,1fr);}}
+.sc{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem;}
+.sc-lbl{font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;font-family:'Montserrat',sans-serif;}
+.sc-val{font-family:'Montserrat',sans-serif;font-size:26px;font-weight:900;color:var(--navy);}
+.sc-val.orange{color:var(--orange);}
+.sc-val.green{color:var(--success);}
+.sc-val.blue{color:var(--blue);}
+.cap-bar{height:5px;background:#e5e7eb;border-radius:100px;margin-top:7px;overflow:hidden;}
+.cap-fill{height:100%;background:linear-gradient(90deg,var(--orange),var(--gold));border-radius:100px;transition:width 0.5s;}
+
+/* TABS */
+.atabs{display:flex;gap:3px;background:#e8edf5;border-radius:10px;padding:3px;margin-bottom:1.25rem;overflow-x:auto;}
+.atab{flex:1;padding:7px 10px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:all 0.2s;font-family:'Montserrat',sans-serif;white-space:nowrap;}
+.atab.active{background:#fff;color:var(--navy);box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+
+/* TABLE */
+.tw{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.tt{display:flex;align-items:center;justify-content:space-between;padding:0.875rem 1rem;border-bottom:1px solid var(--border);gap:10px;flex-wrap:wrap;}
+.tt h3{font-family:'Montserrat',sans-serif;font-weight:700;font-size:13px;color:var(--navy);}
+.tt-right{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.si{background:#f8f9fb;border:1.5px solid var(--border);border-radius:8px;padding:7px 12px;font-size:12px;color:var(--text);font-family:'Open Sans',sans-serif;outline:none;min-width:0;width:200px;}
+.si:focus{border-color:var(--orange);}
+.ts{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:700px;}
+th{text-align:left;padding:8px 10px;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;background:#f8f9fb;border-bottom:1px solid var(--border);font-family:'Montserrat',sans-serif;white-space:nowrap;}
+td{padding:9px 10px;color:var(--text);border-bottom:1px solid #f1f5f9;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafbff;}
+.badge{display:inline-block;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;white-space:nowrap;}
+.bp{background:#dcfce7;color:#166534;}
+.bpend{background:#fef9c3;color:#854d0e;}
+.bind{background:#e0e7ff;color:#3730a3;}
+.bgrp{background:#fce7f3;color:#9d174d;}
+.bcpl{background:#f0fdf4;color:#166534;}
+.bstu{background:#fff7ed;color:#9a3412;}
+.bci{background:#dcfce7;color:#166534;}
+.bnci{background:#f3f4f6;color:#6b7280;}
+.empty{text-align:center;padding:3rem;color:var(--muted);font-size:13px;}
+.abtns{display:flex;gap:4px;flex-wrap:wrap;}
+
+/* MODAL */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:600;align-items:center;justify-content:center;padding:1rem;}
+.mbg.open{display:flex;}
+.modal{background:#fff;border-radius:16px;padding:1.5rem;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;}
+.modal h3{font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;color:var(--navy);margin-bottom:1.25rem;}
+.mac{display:flex;gap:10px;justify-content:flex-end;margin-top:1.25rem;}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:440px){.modal-grid{grid-template-columns:1fr;}}
+
+/* DELEGATE DETAIL MODAL */
+.detail-row{display:flex;justify-content:space-between;font-size:12px;padding:7px 0;border-bottom:1px solid #f1f5f9;}
+.detail-row:last-child{border-bottom:none;}
+.detail-row span:first-child{color:var(--muted);flex-shrink:0;margin-right:8px;}
+.detail-row span:last-child{font-weight:600;color:var(--navy);text-align:right;}
+
+/* LOADING / TOAST */
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(26,48,96,0.85);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.loading-overlay.show{display:flex;}
+.spinner{width:44px;height:44px;border:4px solid rgba(255,255,255,0.2);border-top-color:var(--orange);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{color:#fff;font-family:'Montserrat',sans-serif;font-weight:600;font-size:14px;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;font-family:'Montserrat',sans-serif;z-index:1000;opacity:0;transition:opacity 0.3s;pointer-events:none;}
+.toast.show{opacity:1;}
+.toast.error{background:var(--danger);}
+.toast.success{background:var(--success);}
+
+/* PRINT */
+@media print {
+  .nav,.dash-hdr-btns,.atabs,.tt-right,.abtns,.btn-signout{display:none!important;}
+  .tw{border:none;}
+  body{background:#fff;}
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading"><div class="spinner"></div><div class="loading-text" id="loading-text">Loading...</div></div>
+<div class="toast" id="toast"></div>
+
+<nav class="nav">
+  <a class="nav-logo" href="index.html">
+    <img src="logo.jpg" alt="Multi Ministries">
+    <div class="nav-logo-text">Multi Ministries <span>Admin Portal · REACH 2026</span></div>
+  </a>
+  <div class="nav-right">
+    <span class="nav-user" id="nav-user-name"></span>
+    <button class="btn-signout" onclick="signOut()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- LOGIN PAGE -->
+<div class="page active" id="page-login">
+  <div class="login-wrap">
+    <div class="login-card">
+      <img class="login-logo" src="logo.jpg" alt="Multi Ministries Logo">
+      <div class="login-title">Leadership Admin Portal</div>
+      <div class="login-sub">REACH Leaders Summit 2026 · Authorised Access Only</div>
+      <div class="fg"><label>Admin Password</label>
+        <input type="password" id="login-pw" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <div id="login-err" style="color:var(--danger);font-size:12px;margin-bottom:10px;display:none;text-align:left;">Incorrect password. Please try again.</div>
+      <button class="btn btn-orange" style="width:100%;" onclick="doLogin()">Sign In →</button>
+      <p style="margin-top:1rem;font-size:10px;color:var(--muted);">Access restricted to Multi Ministries leadership only.<br>Contact office@multiministries.co.za for access.</p>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD PAGE -->
+<div class="page" id="page-dashboard">
+  <div class="dash-wrap">
+    <div class="dash-hdr">
+      <div>
+        <h2>REACH 2026 Dashboard</h2>
+        <p id="dash-subtitle">Joy Unspeakable, Roodeplaat · 31 Aug – 3 Sep 2026 · <span id="last-refresh"></span></p>
+      </div>
+      <div class="dash-hdr-btns">
+        <button class="btn btn-outline btn-sm" onclick="refreshData()">↻ Refresh</button>
+        <button class="btn btn-outline btn-sm" onclick="exportCSV()">Export CSV ↓</button>
+        <button class="btn btn-outline btn-sm" onclick="window.print()">Print ↓</button>
+        <button class="btn btn-orange btn-sm" onclick="window.open('index.html','_blank')">+ Register</button>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="sc">
+        <div class="sc-lbl">Total Registrations</div>
+        <div class="sc-val orange" id="st-regs">—</div>
+      </div>
+      <div class="sc">
+        <div class="sc-lbl">Total Delegates</div>
+        <div class="sc-val" id="st-del">—</div>
+        <div class="cap-bar"><div class="cap-fill" id="st-cap" style="width:0%"></div></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px;" id="st-cap-txt">0/420</div>
+      </div>
+      <div class="sc">
+        <div class="sc-lbl">Checked In Today</div>
+        <div class="sc-val green" id="st-ci">—</div>
+      </div>
+      <div class="sc">
+        <div class="sc-lbl">Revenue (Confirmed Paid)</div>
+        <div class="sc-val blue" id="st-rev">—</div>
+      </div>
+    </div>
+
+    <div class="atabs">
+      <button class="atab active" onclick="aTab('all')">All Registrations</button>
+      <button class="atab" onclick="aTab('checkin')">Check-In</button>
+      <button class="atab" onclick="aTab('accom')">Accommodation</button>
+      <button class="atab" onclick="aTab('pending')">Pending Payment</button>
+    </div>
+
+    <div class="tw">
+      <div class="tt">
+        <h3 id="tab-title">All Registrations</h3>
+        <div class="tt-right">
+          <input class="si" id="asearch" type="text" placeholder="Search name, ref, ministry..." oninput="renderTable()">
+        </div>
+      </div>
+      <div class="ts" id="table-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="mbg" id="edit-modal">
+  <div class="modal">
+    <h3>Edit Registration</h3>
+    <div class="modal-grid">
+      <div class="fg"><label>Payment Status</label>
+        <select id="em-status" style="background:#f8f9fb;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'Open Sans',sans-serif;outline:none;">
+          <option value="Pending">Pending</option>
+          <option value="Paid">Paid</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="fg"><label>Payment Reference</label>
+        <input type="text" id="em-payref" placeholder="EFT ref / PayFast ID">
+      </div>
+    </div>
+    <div class="fg"><label>Notes</label>
+      <textarea id="em-notes" placeholder="Any notes about this registration..." style="background:#f8f9fb;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'Open Sans',sans-serif;outline:none;resize:vertical;min-height:80px;width:100%;"></textarea>
+    </div>
+    <div class="mac">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('edit-modal')">Cancel</button>
+      <button class="btn btn-orange btn-sm" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="mbg" id="detail-modal">
+  <div class="modal" style="max-width:560px;">
+    <h3 id="detail-title">Delegate Details</h3>
+    <div id="detail-content"></div>
+    <div class="mac">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('detail-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const SUPABASE_URL = 'https://ojngldvungpgphoqyqnh.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qbmdsZHZ1bmdwZ3Bob3F5cW5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NjEwOTIsImV4cCI6MjA4OTMzNzA5Mn0.XPBZZJjccWLKwdz2e44vy8iFW7CW6Ps_T3tJalJjKEU';
+const ADMIN_PASSWORD = 'MultiMin@2026';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+let allRegs = [], curTab = 'all', editId = null;
+
+// ── AUTH ──
+function doLogin() {
+  const pw = document.getElementById('login-pw').value;
+  if (pw === ADMIN_PASSWORD) {
+    sessionStorage.setItem('reach_admin', '1');
+    document.getElementById('login-err').style.display = 'none';
+    showDashboard();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+
+function signOut() {
+  sessionStorage.removeItem('reach_admin');
+  goPage('login');
+}
+
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+}
+
+async function showDashboard() {
+  goPage('dashboard');
+  await refreshData();
+}
+
+window.addEventListener('load', () => {
+  if (sessionStorage.getItem('reach_admin') === '1') showDashboard();
+});
+
+// ── DATA ──
+async function refreshData() {
+  showLoading('Loading registrations...');
+  try {
+    const { data, error } = await sb.from('registrations')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    allRegs = data || [];
+    renderStats();
+    renderTable();
+    document.getElementById('last-refresh').textContent = 'Updated ' + new Date().toLocaleTimeString('en-ZA');
+    showToast('Data refreshed', 'success');
+  } catch (err) {
+    console.error(err);
+    showToast('Error loading data: ' + err.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+// ── STATS ──
+function renderStats() {
+  const total = allRegs.length;
+  const delegates = allRegs.reduce((s, r) => s + (r.delegates || 1), 0);
+  const ci = allRegs.filter(r => r.checked_in).length;
+  const rev = allRegs.filter(r => r.payment_status === 'Paid').reduce((s, r) => s + (r.total_amount || 0), 0);
+  const pct = Math.min(100, Math.round(delegates / 420 * 100));
+  document.getElementById('st-regs').textContent = total;
+  document.getElementById('st-del').textContent = delegates;
+  document.getElementById('st-ci').textContent = ci;
+  document.getElementById('st-rev').textContent = 'R' + rev.toLocaleString('en-ZA');
+  document.getElementById('st-cap').style.width = pct + '%';
+  document.getElementById('st-cap-txt').textContent = `${delegates}/420 total capacity (${pct}%)`;
+}
+
+// ── TABLE ──
+function aTab(t) {
+  curTab = t;
+  document.querySelectorAll('.atab').forEach((el, i) =>
+    el.classList.toggle('active', ['all','checkin','accom','pending'][i] === t));
+  const titles = {all:'All Registrations', checkin:'Delegate Check-In', accom:'Accommodation Overview', pending:'Pending Payment'};
+  document.getElementById('tab-title').textContent = titles[t];
+  renderTable();
+}
+
+function renderTable() {
+  const q = (document.getElementById('asearch')?.value || '').toLowerCase();
+  let data = allRegs.filter(r =>
+    (r.first_name + ' ' + r.last_name).toLowerCase().includes(q) ||
+    (r.ref_number || '').toLowerCase().includes(q) ||
+    (r.ministry || '').toLowerCase().includes(q) ||
+    (r.email || '').toLowerCase().includes(q)
+  );
+
+  if (curTab === 'pending') data = data.filter(r => r.payment_status === 'Pending');
+  if (curTab === 'checkin') { renderCheckinTable(data); return; }
+  if (curTab === 'accom') { renderAccomTable(data); return; }
+
+  const wrap = document.getElementById('table-body');
+  if (!data.length) { wrap.innerHTML = '<div class="empty">No registrations found.</div>'; return; }
+
+  wrap.innerHTML = `<table>
+    <thead><tr>
+      <th>Ref</th><th>Name</th><th>Ministry</th><th>Type</th><th>Accom</th>
+      <th>Delegates</th><th>Discount</th><th>Total</th><th>Payment</th><th>Status</th><th>Check-In</th><th>Actions</th>
+    </tr></thead>
+    <tbody>
+    ${data.map(r => `<tr>
+      <td style="font-weight:700;color:var(--orange);font-size:11px;white-space:nowrap;">${r.ref_number}</td>
+      <td>
+        <div style="font-weight:600;color:var(--navy);">${r.first_name} ${r.last_name}</div>
+        <div style="font-size:10px;color:var(--muted);">${r.email}</div>
+        <div style="font-size:10px;color:var(--muted);">${r.phone}</div>
+      </td>
+      <td style="font-size:11px;">${r.ministry || '—'}<br><span style="color:var(--muted);font-size:10px;">${r.province || ''}</span></td>
+      <td>
+        <span class="badge ${r.reg_type==='group'?'bgrp':r.reg_type==='couple'?'bcpl':'bind'}">${r.reg_type}</span>
+        ${r.is_student ? '<br><span class="badge bstu" style="margin-top:3px;">Student</span>' : ''}
+      </td>
+      <td style="font-size:11px;white-space:nowrap;">${r.accommodation}</td>
+      <td style="font-weight:700;text-align:center;">${r.delegates}</td>
+      <td style="text-align:center;">${r.discount_percent > 0 ? `<span style="color:var(--success);font-weight:700;">-${r.discount_percent}%</span>` : '—'}</td>
+      <td style="font-weight:700;white-space:nowrap;">R${(r.total_amount||0).toLocaleString('en-ZA')}</td>
+      <td style="font-size:11px;">${r.payment_method === 'payfast' ? 'PayFast' : 'At Venue'}</td>
+      <td><span class="badge ${r.payment_status==='Paid'?'bp':'bpend'}">${r.payment_status}</span></td>
+      <td><span class="badge ${r.checked_in?'bci':'bnci'}">${r.checked_in ? '✓ In' : 'Pending'}</span></td>
+      <td>
+        <div class="abtns">
+          <button class="btn btn-xs btn-edit" onclick="openDetail('${r.id}')">View</button>
+          <button class="btn btn-xs btn-edit" onclick="openEdit('${r.id}')">Edit</button>
+          ${!r.checked_in ? `<button class="btn btn-xs btn-ci" onclick="checkIn('${r.id}')">Check In</button>` : '<span class="badge bci">✓ In</span>'}
+          <button class="btn btn-xs btn-del" onclick="deleteReg('${r.id}','${r.first_name} ${r.last_name}')">Del</button>
+        </div>
+      </td>
+    </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function renderCheckinTable(data) {
+  const wrap = document.getElementById('table-body');
+  if (!data.length) { wrap.innerHTML = '<div class="empty">No registrations found.</div>'; return; }
+  wrap.innerHTML = `<table>
+    <thead><tr><th>Ref</th><th>Name</th><th>Phone</th><th>Ministry</th><th>Accommodation</th><th>Delegates</th><th>Payment</th><th>Check-In Action</th></tr></thead>
+    <tbody>
+    ${data.map(r => `<tr style="${r.checked_in?'background:#f0fdf4;':''}">
+      <td style="font-weight:700;color:var(--orange);white-space:nowrap;">${r.ref_number}</td>
+      <td><strong>${r.first_name} ${r.last_name}</strong><br><span style="font-size:10px;color:var(--muted);">${r.reg_type}</span></td>
+      <td style="font-size:12px;">${r.phone}</td>
+      <td style="font-size:11px;">${r.ministry || '—'}</td>
+      <td><span class="badge bind">${r.accommodation}</span></td>
+      <td style="font-weight:700;text-align:center;">${r.delegates}</td>
+      <td><span class="badge ${r.payment_status==='Paid'?'bp':'bpend'}">${r.payment_status}</span></td>
+      <td>${r.checked_in
+        ? `<span class="badge bci" style="font-size:12px;padding:5px 12px;">✓ Checked In</span>`
+        : `<button class="btn btn-ci" style="padding:7px 16px;font-size:12px;" onclick="checkIn('${r.id}')">✓ Check In</button>`
+      }</td>
+    </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function renderAccomTable(data) {
+  const dc = data.filter(r=>r.accommodation==='dormitory').reduce((s,r)=>s+(r.delegates||1),0);
+  const gc = data.filter(r=>r.accommodation==='guesthouse').reduce((s,r)=>s+(r.delegates||1),0);
+  const cc = data.filter(r=>r.accommodation==='couples').reduce((s,r)=>s+(r.delegates||1),0);
+  const wrap = document.getElementById('table-body');
+  wrap.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:1rem;">
+      <div class="sc"><div class="sc-lbl">Dormitory</div><div class="sc-val">${dc}</div>
+        <div class="cap-bar"><div class="cap-fill" style="width:${Math.min(100,Math.round(dc/300*100))}%"></div></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px;">${dc}/300 capacity</div>
+      </div>
+      <div class="sc"><div class="sc-lbl">Guest House</div><div class="sc-val">${gc}</div>
+        <div class="cap-bar"><div class="cap-fill" style="width:${Math.min(100,Math.round(gc/120*100))}%"></div></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:3px;">${gc}/120 capacity</div>
+      </div>
+      <div class="sc"><div class="sc-lbl">Couples</div><div class="sc-val">${cc}</div></div>
+    </div>
+    <table>
+      <thead><tr><th>Ref</th><th>Name</th><th>Accommodation</th><th>Delegates</th><th>Children</th><th>Payment</th><th>Total</th></tr></thead>
+      <tbody>
+      ${data.map(r=>`<tr>
+        <td style="font-weight:700;color:var(--orange);font-size:11px;">${r.ref_number}</td>
+        <td>${r.first_name} ${r.last_name}${r.is_student?' <span class="badge bstu">Student</span>':''}</td>
+        <td><span class="badge bind">${r.accommodation}</span></td>
+        <td style="font-weight:700;text-align:center;">${r.delegates}</td>
+        <td style="text-align:center;">${r.children_count||0}</td>
+        <td><span class="badge ${r.payment_status==='Paid'?'bp':'bpend'}">${r.payment_status}</span></td>
+        <td style="font-weight:700;">R${(r.total_amount||0).toLocaleString('en-ZA')}</td>
+      </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+// ── ACTIONS ──
+async function checkIn(id) {
+  const reg = allRegs.find(r => r.id === id);
+  if (!reg) return;
+  if (!confirm(`Check in ${reg.first_name} ${reg.last_name}?\nRef: ${reg.ref_number}`)) return;
+  showLoading('Checking in delegate...');
+  try {
+    const { error } = await sb.from('registrations').update({
+      checked_in: true,
+      checked_in_at: new Date().toISOString(),
+      checked_in_by: 'Admin'
+    }).eq('id', id);
+    if (error) throw error;
+    await refreshData();
+    showToast(`${reg.first_name} ${reg.last_name} checked in!`, 'success');
+  } catch (err) {
+    hideLoading();
+    showToast('Check-in failed: ' + err.message, 'error');
+  }
+}
+
+function openEdit(id) {
+  const reg = allRegs.find(r => r.id === id);
+  if (!reg) return;
+  editId = id;
+  document.getElementById('em-status').value = reg.payment_status;
+  document.getElementById('em-payref').value = reg.payment_reference || '';
+  document.getElementById('em-notes').value = reg.notes || '';
+  document.getElementById('edit-modal').classList.add('open');
+}
+
+async function saveEdit() {
+  if (!editId) return;
+  showLoading('Saving changes...');
+  try {
+    const { error } = await sb.from('registrations').update({
+      payment_status: document.getElementById('em-status').value,
+      payment_reference: document.getElementById('em-payref').value,
+      notes: document.getElementById('em-notes').value
+    }).eq('id', editId);
+    if (error) throw error;
+    closeModal('edit-modal');
+    await refreshData();
+    showToast('Registration updated', 'success');
+  } catch (err) {
+    hideLoading();
+    showToast('Update failed: ' + err.message, 'error');
+  }
+}
+
+function openDetail(id) {
+  const r = allRegs.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('detail-title').textContent = r.first_name + ' ' + r.last_name + ' — ' + r.ref_number;
+  document.getElementById('detail-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;">
+      ${[
+        ['Ref Number', r.ref_number],
+        ['Registration Type', r.reg_type],
+        ['Email', r.email],
+        ['Phone', r.phone],
+        ['Gender', r.gender || '—'],
+        ['ID Number', r.id_number || '—'],
+        ['Province', r.province || '—'],
+        ['Ministry', r.ministry || '—'],
+        ['Address', r.address || '—'],
+        ['Is Student', r.is_student ? 'Yes' : 'No'],
+        ['Accommodation', r.accommodation],
+        ['Delegates', r.delegates],
+        ['Children', r.children_count || 0],
+        ['Group Discount', r.discount_percent ? r.discount_percent + '%' : 'None'],
+        ['Total Amount', 'R' + (r.total_amount||0).toLocaleString('en-ZA')],
+        ['Payment Method', r.payment_method === 'payfast' ? 'PayFast' : 'At Venue'],
+        ['Payment Status', r.payment_status],
+        ['Payment Ref', r.payment_reference || '—'],
+        ['Next of Kin', r.nok_name || '—'],
+        ['NOK Phone', r.nok_phone || '—'],
+        ['NOK Relation', r.nok_relation || '—'],
+        ['Checked In', r.checked_in ? '✓ Yes — ' + (r.checked_in_at ? new Date(r.checked_in_at).toLocaleString('en-ZA') : '') : 'No'],
+        ['Registered On', new Date(r.created_at).toLocaleString('en-ZA')],
+        ['Notes', r.notes || '—'],
+      ].map(([k,v]) => `<div class="detail-row"><span>${k}</span><span>${v}</span></div>`).join('')}
+    </div>
+    ${r.group_members ? `<div style="margin-top:12px;padding:10px;background:#f8f9fb;border-radius:8px;font-size:12px;"><strong>Group Members:</strong><br><pre style="white-space:pre-wrap;font-family:'Open Sans',sans-serif;">${r.group_members}</pre></div>` : ''}
+  `;
+  document.getElementById('detail-modal').classList.add('open');
+}
+
+async function deleteReg(id, name) {
+  if (!confirm(`Delete registration for ${name}?\n\nThis cannot be undone.`)) return;
+  showLoading('Deleting registration...');
+  try {
+    const { error } = await sb.from('registrations').delete().eq('id', id);
+    if (error) throw error;
+    await refreshData();
+    showToast('Registration deleted', 'success');
+  } catch (err) {
+    hideLoading();
+    showToast('Delete failed: ' + err.message, 'error');
+  }
+}
+
+// ── EXPORT CSV ──
+function exportCSV() {
+  const headers = ['Ref','Type','First Name','Last Name','Email','Phone','Gender','ID Number','Address','Province','Ministry','Is Student','Next of Kin','NOK Relation','NOK Phone','Accommodation','Delegates','Children','Discount %','Total Amount (R)','Payment Method','Payment Status','Payment Reference','Checked In','Check-In Time','Registration Date','Notes'];
+  const rows = allRegs.map(r => [
+    r.ref_number, r.reg_type, r.first_name, r.last_name, r.email, r.phone,
+    r.gender||'', r.id_number||'', (r.address||'').replace(/\n/g,' '), r.province||'', r.ministry||'',
+    r.is_student?'Yes':'No', r.nok_name||'', r.nok_relation||'', r.nok_phone||'',
+    r.accommodation, r.delegates, r.children_count||0, r.discount_percent||0,
+    r.total_amount||0, r.payment_method, r.payment_status, r.payment_reference||'',
+    r.checked_in?'Yes':'No', r.checked_in_at ? new Date(r.checked_in_at).toLocaleString('en-ZA') : '',
+    new Date(r.created_at).toLocaleString('en-ZA'), r.notes||''
+  ]);
+  const csv = [headers, ...rows].map(row =>
+    row.map(v => '"' + String(v || '').replace(/"/g, '""') + '"').join(',')
+  ).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `REACH2026-Registrations-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('CSV exported successfully!', 'success');
+}
+
+// ── HELPERS ──
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function showLoading(msg) { document.getElementById('loading-text').textContent = msg||'Loading...'; document.getElementById('loading').classList.add('show'); }
+function hideLoading() { document.getElementById('loading').classList.remove('show'); }
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show' + (type?' '+type:'');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
